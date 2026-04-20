@@ -11,9 +11,10 @@ const app = express();
 // 3. MIDDLEWARE
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // 4. CONNECT DATABASE (AFTER IMPORT)
-mongoose.connect("mongodb://127.0.0.1:27017/mydb")
+mongoose.connect("mongodb://127.0.0.1:27017/mydbNEW")
   .then(() => console.log("MongoDB Connected"))
   .catch(err => console.log(err));
 
@@ -25,9 +26,23 @@ app.get("/", (req, res) => {
 // ✅ ADD HERE ↓↓↓
 
 app.post("/users", async (req, res) => {
-  const user = new User(req.body);
-  await user.save();
-  res.json(user);
+  console.log("BODY:", req.body);   // 👈 ADD THIS LINE
+
+  const { name, age, email } = req.body;
+  if (!name || !age || !email) {
+    return res.status(400).json({
+      error: "name, age and email are required",
+      received: req.body
+    });
+  }
+
+  try {
+    const user = new User({ name, age, email });
+    await user.save();
+    res.status(201).json(user);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 app.get("/users", async (req, res) => {

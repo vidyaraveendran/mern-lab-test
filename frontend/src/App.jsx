@@ -4,6 +4,7 @@ function App() {
   const [users, setUsers] = useState([]);
   const [name, setName] = useState("");
   const [age, setAge] = useState("");
+  const [email, setEmail] = useState("");
 
   // GET users from backend
   useEffect(() => {
@@ -19,7 +20,7 @@ function App() {
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({ name, age })
+      body: JSON.stringify({ name, age, email })
     }).then(() => {
       window.location.reload(); // refresh to see new data
     });
@@ -37,6 +38,10 @@ function App() {
         placeholder="Age"
         onChange={e => setAge(e.target.value)}
       />
+      <input
+        placeholder="Email"
+        onChange={e => setEmail(e.target.value)}
+      />
 
       <button onClick={addUser}>Add User</button>
 
@@ -44,7 +49,7 @@ function App() {
       <ul>
         {users.map(u => (
           <li key={u._id}>
-            {u.name} - {u.age}
+            {u.name} - {u.age} - {u.email || "no email"}
           </li>
         ))}
       </ul>
