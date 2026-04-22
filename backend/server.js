@@ -2,6 +2,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const path = require("path");
 // 👇 ADD THIS LINE HERE
 const User = require("./models/User");
 
@@ -13,17 +14,24 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// 4. CONNECT DATABASE (AFTER IMPORT)
-mongoose.connect("mongodb://127.0.0.1:27017/mydbNEW")
-  .then(() => console.log("MongoDB Connected"))
-  .catch(err => console.log(err));
+// Serve static files from frontend build
+app.use(express.static(path.join(__dirname, "../frontend/dist")));
 
-// 5. ROUTE
+// 4. CONNECT DATABASE (AFTER IMPORT)
+const MONGODB_URI = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/mydbNEW";
+mongoose.connect(MONGODB_URI)
+  .then(() => console.log("✅ MongoDB Connected"))
+  .catch(err => {
+    console.error("❌ MongoDB Connection Failed:", err.message);
+    process.exit(1);  // Exit if DB connection fails
+  });
+
+// 5. ROUTES
 app.get("/", (req, res) => {
-  res.send("Server is running");
+  res.json({ message: "Backend API is running 🚀", env: process.env.NODE_ENV });
 });
 
-// ✅ ADD HERE ↓↓↓
+//  ADD HERE ↓↓↓
 
 app.post("/users", async (req, res) => {
   console.log("BODY:", req.body);   // 👈 ADD THIS LINE
@@ -74,6 +82,10 @@ app.delete("/users/:id", async (req, res) => {
   res.json({ message: "User deleted" });
 });
 
+// Serve React app for all other routes (client-side routing)
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "../frontend/dist/index.html"));
+});
 
 // 👇 keep this at bottom(START SERVER)
 const PORT = process.env.PORT || 5000;
