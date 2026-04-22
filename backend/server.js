@@ -15,7 +15,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Serve static files from frontend build
-app.use(express.static(path.join(__dirname, "../frontend/dist")));
+const distPath = path.join(__dirname, "../frontend/dist");
+app.use(express.static(distPath));
 
 // 4. CONNECT DATABASE (AFTER IMPORT)
 const MONGODB_URI = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/mydbNEW";
@@ -84,7 +85,12 @@ app.delete("/users/:id", async (req, res) => {
 
 // Serve React app for all other routes (client-side routing)
 app.get(/.*/, (req, res) => {
-  res.sendFile(path.join(__dirname, "../frontend/dist/index.html"));
+  const indexPath = path.join(distPath, "index.html");
+  if (require("fs").existsSync(indexPath)) {
+    res.sendFile(indexPath);
+  } else {
+    res.status(404).json({ error: "Frontend build not found. Run: npm run build" });
+  }
 });
 
 // 👇 keep this at bottom(START SERVER)
